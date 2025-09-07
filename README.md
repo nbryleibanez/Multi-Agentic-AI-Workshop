@@ -43,14 +43,15 @@ tests-and-evals
 ### Step 2: Set Environment Variable
 
 **Create a .env file with content:**
+
 ```bash
-GEMINI_API_KEY=YOUR_API_KEY_HERE
+AWS_BEARER_TOKEN_BEDROCK=YOUR_API_KEY_HERE
 ```
 
 ### Security Best Practices
 
 - **Never commit API keys** to Git repositories
-- **Use server-side calls** for production applications  
+- **Use server-side calls** for production applications
 - **Consider API key restrictions** in Google Cloud Console to limit usage
 - **Rotate keys periodically** if they might be compromised
 
@@ -58,7 +59,7 @@ For more details, see the [official Gemini API documentation](https://ai.google.
 
 ---
 
-# 00-boot — Project scaffolding & smoke test 
+# 00-boot — Project scaffolding & smoke test
 
 (If you feel lost go to the finished section of this at `git checkout 00-boot` and run `uv sync --all-groups --all-extras`)
 
@@ -73,7 +74,7 @@ source .venv/bin/activate
 
 # Add deps
 uv add "pydantic-ai-slim[mcp]" "httpx>=0.28.1" "pydantic>=2.11.7" tenacity
-uv add "google-generativeai>=0.8.5" "pydantic-ai-slim[google]"
+uv add "pydantic-ai-slim[bedrock]"
 uv add --dev pytest "python-dotenv==1.1.1"
 ```
 
@@ -659,11 +660,11 @@ git add -A && git commit -m "tests-and-evals"
 
 ## Troubleshooting & tips
 
-* **Model strings:** Replace `"gemini-2.5-flash"` with your provider/model (e.g., `"openai:gpt-4o-mini"`, `"anthropic:claude-3-5-sonnet-latest"`) and set the correct API key environment variable.
-* **Streaming:** `run_stream` yields final text chunks. If you need full event-by-event control, use the async `.run()` API and inspect messages/events.
-* **Unions:** When using unions or output functions, parameterize `Agent[DepsT, OutputT]` and use `# type: ignore[valid-type]` if your type checker complains on `output_type=`.
-* **MCP:** Use stdio for local subprocess servers; use Streamable HTTP for network servers. Add `tool_prefix` if multiple MCP servers expose identically named tools.
-* **Guardrails:** `UsageLimits` prevents runaway loops and caps tokens/tool calls. For resiliency, add Tenacity retries to your own tools or HTTP calls.
-* **Repro:** Commit your `uv.lock` to pin dependency versions for the workshop.
+- **Model strings:** Replace `"gemini-2.5-flash"` with your provider/model (e.g., `"openai:gpt-4o-mini"`, `"anthropic:claude-3-5-sonnet-latest"`) and set the correct API key environment variable.
+- **Streaming:** `run_stream` yields final text chunks. If you need full event-by-event control, use the async `.run()` API and inspect messages/events.
+- **Unions:** When using unions or output functions, parameterize `Agent[DepsT, OutputT]` and use `# type: ignore[valid-type]` if your type checker complains on `output_type=`.
+- **MCP:** Use stdio for local subprocess servers; use Streamable HTTP for network servers. Add `tool_prefix` if multiple MCP servers expose identically named tools.
+- **Guardrails:** `UsageLimits` prevents runaway loops and caps tokens/tool calls. For resiliency, add Tenacity retries to your own tools or HTTP calls.
+- **Repro:** Commit your `uv.lock` to pin dependency versions for the workshop.
 
 You now have a compact, production-shaped toolkit: typed agents, practical MCP integrations, and three multi-agent patterns (Router, Pipeline, Critic–Editor) that scale from MVP to real-world workloads—without rewriting your stack.
