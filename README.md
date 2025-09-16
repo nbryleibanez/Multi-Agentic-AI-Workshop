@@ -5,6 +5,7 @@
 This is the workshop handout. Each section includes a short goal, commands, and **copy-pasteable code** with file paths. If someone falls behind, you can checkpoint the repo by committing at the end of each section.
 
 ---
+
 ## Repo layout & branches you’ll create
 
 ```
@@ -21,18 +22,17 @@ This is the workshop handout. Each section includes a short goal, commands, and 
 10-tests-and-evals
 ```
 
-> Models in the examples use `gemini-2.5-flash`. Swap to any provider/model your team uses by changing the model string and setting the corresponding API key.
+> Models in the examples use `bedrock:anthropic.claude-3-haiku-20240307-v1:0`. Swap to any provider/model your team uses by changing the model string and setting the corresponding API key.
 
 ---
 
-# Getting Your Gemini API Key
+# Getting Your Bedrock API Key
 
-**Goal:** Set up a free Gemini API key to power your AI agents.
+**Goal:** Set up a Bedrock API key to power your AI agents.
 
 ### Step 1: Create Your API Key
 
-1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Sign in with your Google account
+2. Sign in with your AWS account
 3. Click **"Create API key"** <img width="1482" height="790" alt="image" src="https://github.com/user-attachments/assets/a9de98dc-f7b3-4307-bb51-16dfe5125c44" />
 4. Choose **"Create API key in new project"** <img width="1151" height="740" alt="image" src="https://github.com/user-attachments/assets/3039b1ba-1e0a-4939-8897-c9dd76eb7822" />
 5. Copy the generated API key (starts with `AI...`)
@@ -42,22 +42,20 @@ This is the workshop handout. Each section includes a short goal, commands, and 
 ### Step 2: Set Environment Variable
 
 **Create a .env file with content:**
+
 ```bash
-GEMINI_API_KEY=YOUR_API_KEY_HERE
+AWS_BEARER_TOKEN_BEDROCK=YOUR_API_KEY_HERE
 ```
 
 ### Security Best Practices
 
 - **Never commit API keys** to Git repositories
-- **Use server-side calls** for production applications  
-- **Consider API key restrictions** in Google Cloud Console to limit usage
+- **Use server-side calls** for production applications
 - **Rotate keys periodically** if they might be compromised
-
-For more details, see the [official Gemini API documentation](https://ai.google.dev/gemini-api/docs/api-key).
 
 ---
 
-# 00-boot — Project scaffolding & smoke test 
+# 00-boot — Project scaffolding & smoke test
 
 > For Windows users, under the `.devcontainer` folder, inside `devcontainer.json`, change `source=${localEnv:HOME}` to `source=${localEnv:USERPROFILE}`.
 
@@ -74,7 +72,7 @@ source .venv/bin/activate
 
 # Add deps
 uv add "pydantic-ai-slim[mcp]" "httpx>=0.28.1" "pydantic>=2.11.7" tenacity nest-asyncio fastmcp
-uv add "google-generativeai>=0.8.5" "pydantic-ai-slim[google]"
+uv add "pydantic-ai-slim[bedrock]"
 uv add --dev pytest "python-dotenv==1.1.1" ruff
 ```
 
@@ -96,7 +94,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def main() -> None:
-    agent = Agent("gemini-2.5-flash", instructions="Be concise.")
+    agent = Agent("bedrock:anthropic.claude-3-haiku-20240307-v1:0", instructions="Be concise.")
     res = agent.run_sync("Say 'hello workshop' exactly.")
     print(res.output)
 
@@ -132,7 +130,7 @@ nest_asyncio.apply()
 
 load_dotenv()
 
-agent = Agent("gemini-2.5-flash", instructions="Answer briefly.")
+agent = Agent("bedrock:anthropic.claude-3-haiku-20240307-v1:0", instructions="Answer briefly.")
 
 
 def run_sync_demo() -> None:
@@ -181,7 +179,6 @@ Run:
 uv run src/agent_basics.py
 ```
 
-
 ---
 
 # 02-typed-output — Pydantic models & unions
@@ -220,7 +217,7 @@ from models.answer_schema import Typed, Answer, Fallback
 load_dotenv()
 
 agent = Agent[None, Typed](
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     output_type=Answer | Fallback,  # type: ignore[valid-type]
     instructions="Return a factual Answer model; if unsure, return Fallback.",
 )
@@ -229,7 +226,7 @@ agent = Agent[None, Typed](
 def main() -> None:
     result1 = agent.run_sync("What is the capital of France?").output
     print(result1.model_dump_json(indent=2))
-    
+
     result2 = agent.run_sync("Gibberish 123??").output
     print(result2.model_dump_json(indent=2))
 
@@ -243,7 +240,6 @@ Run:
 ```bash
 uv run src/typed_output.py
 ```
-
 
 ---
 
@@ -262,7 +258,7 @@ from pydantic_ai import Agent, RunContext
 
 load_dotenv()
 
-agent = Agent("gemini-2.5-flash", instructions="""
+agent = Agent("bedrock:anthropic.claude-3-haiku-20240307-v1:0", instructions="""
 You can call `now()` for the current ISO timestamp.
 Call it before answering time-sensitive questions.
 """)
@@ -296,7 +292,6 @@ Run:
 uv run src/tools_fundamentals.py
 ```
 
-
 ---
 
 # 04-mcp-stdio — Use a local MCP server as a toolset (subprocess)
@@ -326,7 +321,7 @@ def add(a: int, b: int) -> int:
 
 @mcp.tool()
 def multiply(a: int, b: int) -> int:
-    """Multiply two numbers.""" 
+    """Multiply two numbers."""
     return a * b
 
 @mcp.tool()
@@ -354,7 +349,7 @@ from pydantic_ai.mcp import MCPServerStdio
 calc_server = MCPServerStdio("uv", args=["run", "src/servers/calc_server.py"], timeout=30)
 
 agent = Agent(
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     toolsets=[calc_server],
     instructions="Use tools when math calculations or date operations help."
 )
@@ -363,7 +358,7 @@ async def main() -> None:
     async with agent:
         res = await agent.run("How many days between 2000-01-01 and 2025-03-18?")
         print(res.output)
-        
+
         res2 = await agent.run("What is 17 times 23?")
         print(res2.output)
 
@@ -376,7 +371,6 @@ Run:
 ```bash
 uv run src/mcp_stdio_client.py
 ```
-
 
 ---
 
@@ -401,7 +395,7 @@ def add(a: int, b: int) -> int:
 
 @mcp.tool()
 def multiply(a: int, b: int) -> int:
-    """Multiply two numbers.""" 
+    """Multiply two numbers."""
     return a * b
 
 @mcp.tool()
@@ -438,13 +432,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 server = MCPServerStreamableHTTP("http://localhost:8000/mcp")
-agent = Agent("gemini-2.5-flash", toolsets=[server])
+agent = Agent("bedrock:anthropic.claude-3-haiku-20240307-v1:0", toolsets=[server])
 
 async def main() -> None:
     async with agent:
         res = await agent.run("What is 7 plus 5? Use the tool.")
         print(res.output)
-        
+
         res2 = await agent.run("Calculate the factorial of 6.")
         print(res2.output)
 
@@ -460,7 +454,6 @@ uv run src/servers/calc_http_server.py
 # terminal 2
 uv run src/mcp_http_client.py
 ```
-
 
 ---
 
@@ -481,7 +474,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-agent = Agent("gemini-2.5-flash", instructions="Be brief; avoid verbosity.")
+agent = Agent("bedrock:anthropic.claude-3-haiku-20240307-v1:0", instructions="Be brief; avoid verbosity.")
 
 # Simulate a flaky HTTP call via a tool; Tenacity handles retries/backoff
 @agent.tool
@@ -510,7 +503,6 @@ Run:
 uv run src/limits_retries.py
 ```
 
-
 ---
 
 # 07-pattern-router — Router/Delegator with typed outcomes
@@ -529,8 +521,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Specialist agents
-math_agent = Agent("gemini-2.5-flash", instructions="Compute or reason step-by-step; output the final number.")
-qa_agent   = Agent("gemini-2.5-flash", instructions="Answer factual questions concisely.")
+math_agent = Agent("bedrock:anthropic.claude-3-haiku-20240307-v1:0", instructions="Compute or reason step-by-step; output the final number.")
+qa_agent   = Agent("bedrock:anthropic.claude-3-haiku-20240307-v1:0", instructions="Answer factual questions concisely.")
 
 # Router output choices (functions are selectable outputs)
 async def hand_off_to_math(ctx: RunContext, query: str) -> str:
@@ -549,7 +541,7 @@ class RouterFailure(BaseModel):
 RouterOut = str | RouterFailure
 
 router = Agent[None, RouterOut](
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     output_type=[hand_off_to_math, hand_off_to_qa, RouterFailure],
     instructions=(
         "If the query is numeric/math/code-like, use hand_off_to_math. "
@@ -572,7 +564,6 @@ Run:
 ```bash
 uv run src/pattern_router.py
 ```
-
 
 ---
 
@@ -599,7 +590,7 @@ class Requirements(BaseModel):
 
 
 extractor = Agent[None, Requirements](
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     output_type=Requirements,
     instructions="Extract topic, audience, and a reasonable length (50-800).",
 )
@@ -610,13 +601,13 @@ class Outline(BaseModel):
 
 
 outliner = Agent[None, Outline](
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     output_type=Outline,
     instructions="Produce 3-6 descriptive headings.",
 )
 
 drafter = Agent(
-    "gemini-2.5-flash", instructions="Write a crisp draft under the provided headings."
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0", instructions="Write a crisp draft under the provided headings."
 )
 
 
@@ -648,7 +639,6 @@ Run:
 uv run src/pattern_pipeline.py
 ```
 
-
 ---
 
 # 09-pattern-critic-editor — Two-role refinement loop
@@ -673,9 +663,9 @@ class Review(BaseModel):
     suggestions: list[str]
 
 
-editor = Agent("gemini-2.5-flash", instructions="Draft clearly. Avoid fluff.")
+editor = Agent("bedrock:anthropic.claude-3-haiku-20240307-v1:0", instructions="Draft clearly. Avoid fluff.")
 critic = Agent[None, Review](
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     output_type=Review,
     instructions="Score 1-10; include concrete revision suggestions.",
 )
@@ -712,7 +702,6 @@ Run:
 ```bash
 uv run src/pattern_critic_editor.py
 ```
-
 
 ---
 
@@ -768,16 +757,15 @@ Run:
 uv run -m pytest -q
 ```
 
-
 ---
 
 ## Troubleshooting & tips
 
-* **Model strings:** Replace `"gemini-2.5-flash"` with your provider/model (e.g., `"openai:gpt-4o-mini"`, `"anthropic:claude-3-5-sonnet-latest"`) and set the correct API key environment variable.
-* **Streaming:** `run_stream` yields final text chunks. If you need full event-by-event control, use the async `.run()` API and inspect messages/events.
-* **Unions:** When using unions or output functions, parameterize `Agent[DepsT, OutputT]` and use `# type: ignore[valid-type]` if your type checker complains on `output_type=`.
-* **MCP:** FastMCP provides pure-Python MCP servers. Use stdio for local subprocess servers; use Streamable HTTP for network servers. Add `tool_prefix` if multiple MCP servers expose identically named tools.
-* **Guardrails:** `UsageLimits` prevents runaway loops and caps tokens/tool calls. For resiliency, add Tenacity retries to your own tools or HTTP calls.
-* **Repro:** Commit your `uv.lock` to pin dependency versions for the workshop.
+- **Model strings:** Replace `"bedrock:anthropic.claude-3-haiku-20240307-v1:0"` with your provider/model (e.g., `"openai:gpt-4o-mini"`, `"anthropic:claude-3-5-sonnet-latest"`) and set the correct API key environment variable.
+- **Streaming:** `run_stream` yields final text chunks. If you need full event-by-event control, use the async `.run()` API and inspect messages/events.
+- **Unions:** When using unions or output functions, parameterize `Agent[DepsT, OutputT]` and use `# type: ignore[valid-type]` if your type checker complains on `output_type=`.
+- **MCP:** FastMCP provides pure-Python MCP servers. Use stdio for local subprocess servers; use Streamable HTTP for network servers. Add `tool_prefix` if multiple MCP servers expose identically named tools.
+- **Guardrails:** `UsageLimits` prevents runaway loops and caps tokens/tool calls. For resiliency, add Tenacity retries to your own tools or HTTP calls.
+- **Repro:** Commit your `uv.lock` to pin dependency versions for the workshop.
 
 You now have a compact, production-shaped toolkit: typed agents, practical MCP integrations, and three multi-agent patterns (Router, Pipeline, Critic–Editor) that scale from MVP to real-world workloads—without rewriting your stack.

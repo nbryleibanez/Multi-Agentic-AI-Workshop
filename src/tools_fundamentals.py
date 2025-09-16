@@ -5,7 +5,7 @@ from pydantic_ai import Agent, RunContext
 load_dotenv()
 
 agent = Agent(
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     instructions="""
 You can call `now()` for the current ISO timestamp.
 Call it before answering time-sensitive questions.

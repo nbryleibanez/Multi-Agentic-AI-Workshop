@@ -6,7 +6,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-agent = Agent("gemini-2.5-flash", instructions="Be brief; avoid verbosity.")
+agent = Agent(
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
+    instructions="Be brief; avoid verbosity.",
+)
 
 
 # Simulate a flaky HTTP call via a tool; Tenacity handles retries/backoff

@@ -12,7 +12,7 @@ class Requirements(BaseModel):
 
 
 extractor = Agent[None, Requirements](
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     output_type=Requirements,
     instructions="Extract topic, audience, and a reasonable length (50-800).",
 )
@@ -23,13 +23,14 @@ class Outline(BaseModel):
 
 
 outliner = Agent[None, Outline](
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     output_type=Outline,
     instructions="Produce 3-6 descriptive headings.",
 )
 
 drafter = Agent(
-    "gemini-2.5-flash", instructions="Write a crisp draft under the provided headings."
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
+    instructions="Write a crisp draft under the provided headings.",
 )
 
 

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 server = MCPServerStreamableHTTP("http://localhost:8000/mcp")
-agent = Agent("gemini-2.5-flash", toolsets=[server])
+agent = Agent("bedrock:anthropic.claude-3-haiku-20240307-v1:0", toolsets=[server])
 
 
 async def main() -> None:

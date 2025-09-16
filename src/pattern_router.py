@@ -6,10 +6,13 @@ load_dotenv()
 
 # Specialist agents
 math_agent = Agent(
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     instructions="Compute or reason step-by-step; output the final number.",
 )
-qa_agent = Agent("gemini-2.5-flash", instructions="Answer factual questions concisely.")
+qa_agent = Agent(
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
+    instructions="Answer factual questions concisely.",
+)
 
 
 # Router output choices (functions are selectable outputs)
@@ -44,7 +47,7 @@ class RouterFailure(BaseModel):
 RouterOut = str | RouterFailure
 
 router = Agent[None, RouterOut](
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     output_type=[hand_off_to_math, hand_off_to_qa, RouterFailure],
     instructions=(
         "If the query is numeric/math/code-like, use hand_off_to_math. "

@@ -5,7 +5,7 @@ from models.answer_schema import Typed, Answer, Fallback
 load_dotenv()
 
 agent = Agent[None, Typed](
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     output_type=Answer | Fallback,  # type: ignore[valid-type]
     instructions="Return a factual Answer model; if unsure, return Fallback.",
 )

@@ -8,7 +8,9 @@ nest_asyncio.apply()
 
 load_dotenv()
 
-agent = Agent("gemini-2.5-flash", instructions="Answer briefly.")
+agent = Agent(
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0", instructions="Answer briefly."
+)
 
 
 def run_sync_demo() -> None:

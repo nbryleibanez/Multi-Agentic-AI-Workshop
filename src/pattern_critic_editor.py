@@ -11,9 +11,12 @@ class Review(BaseModel):
     suggestions: list[str]
 
 
-editor = Agent("gemini-2.5-flash", instructions="Draft clearly. Avoid fluff.")
+editor = Agent(
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
+    instructions="Draft clearly. Avoid fluff.",
+)
 critic = Agent[None, Review](
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     output_type=Review,
     instructions="Score 1-10; include concrete revision suggestions.",
 )

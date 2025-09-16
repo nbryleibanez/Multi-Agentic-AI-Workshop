@@ -7,10 +7,12 @@ from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerStdio
 
 
-calc_server = MCPServerStdio("uv", args=["run", "src/servers/calc_server.py"], timeout=30)
+calc_server = MCPServerStdio(
+    "uv", args=["run", "src/servers/calc_server.py"], timeout=30
+)
 
 agent = Agent(
-    "gemini-2.5-flash",
+    "bedrock:anthropic.claude-3-haiku-20240307-v1:0",
     toolsets=[calc_server],
     instructions="Use tools when math calculations or date operations help.",
 )
